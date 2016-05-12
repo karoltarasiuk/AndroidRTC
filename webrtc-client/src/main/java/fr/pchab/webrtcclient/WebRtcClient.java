@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.IO.Options;
 import com.github.nkzawa.socketio.client.Socket;
 import com.github.nkzawa.emitter.Emitter;
 import org.json.JSONException;
