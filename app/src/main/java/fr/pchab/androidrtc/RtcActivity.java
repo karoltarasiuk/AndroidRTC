@@ -157,7 +157,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
 
     public void startCam() {
         // Camera settings
-        client.start("android_test");
+        client.start("RoboAlan");
     }
 
     @Override

@@ -15,6 +15,8 @@ import android.opengl.EGLContext;
 import android.util.Log;
 import org.webrtc.*;
 
+import static android.util.Log.*;
+
 public class WebRtcClient {
     private final static String TAG = WebRtcClient.class.getCanonicalName();
     private final static int MAX_PEER = 2;
@@ -50,15 +52,24 @@ public class WebRtcClient {
 
     private class CreateOfferCommand implements Command{
         public void execute(String peerId, JSONObject payload) throws JSONException {
-            Log.d(TAG,"CreateOfferCommand");
+//            d(TAG, "CreateOfferCommand");
             Peer peer = peers.get(peerId);
             peer.pc.createOffer(peer, pcConstraints);
         }
     }
 
+    private class CreateDataCommand implements Command{
+        public void execute(String peerId, JSONObject payload) throws JSONException {
+//            d(TAG, "CreateOfferCommand");
+//            Peer peer = peers.get(peerId);
+//            peer.pc.createOffer(peer, pcConstraints);
+            e(TAG, "onDataChannel: " + payload.get("msg").toString());
+        }
+    }
+
     private class CreateAnswerCommand implements Command{
         public void execute(String peerId, JSONObject payload) throws JSONException {
-            Log.d(TAG,"CreateAnswerCommand");
+//            d(TAG, "CreateAnswerCommand");
             Peer peer = peers.get(peerId);
             SessionDescription sdp = new SessionDescription(
                     SessionDescription.Type.fromCanonicalForm(payload.getString("type")),
@@ -71,7 +82,7 @@ public class WebRtcClient {
 
     private class SetRemoteSDPCommand implements Command{
         public void execute(String peerId, JSONObject payload) throws JSONException {
-            Log.d(TAG,"SetRemoteSDPCommand");
+//            d(TAG, "SetRemoteSDPCommand");
             Peer peer = peers.get(peerId);
             SessionDescription sdp = new SessionDescription(
                     SessionDescription.Type.fromCanonicalForm(payload.getString("type")),
@@ -83,7 +94,7 @@ public class WebRtcClient {
 
     private class AddIceCandidateCommand implements Command{
         public void execute(String peerId, JSONObject payload) throws JSONException {
-            Log.d(TAG,"AddIceCandidateCommand");
+//            d(TAG, "AddIceCandidateCommand");
             PeerConnection pc = peers.get(peerId).pc;
             if (pc.getRemoteDescription() != null) {
                 IceCandidate candidate = new IceCandidate(
@@ -121,6 +132,7 @@ public class WebRtcClient {
             commandMap.put("offer", new CreateAnswerCommand());
             commandMap.put("answer", new SetRemoteSDPCommand());
             commandMap.put("candidate", new AddIceCandidateCommand());
+            commandMap.put("data", new CreateDataCommand());
         }
 
         private Emitter.Listener onMessage = new Emitter.Listener() {
@@ -161,10 +173,11 @@ public class WebRtcClient {
         };
     }
 
-    private class Peer implements SdpObserver, PeerConnection.Observer{
+    private class Peer implements SdpObserver, PeerConnection.Observer {
         private PeerConnection pc;
         private String id;
         private int endPoint;
+//        private DataChannel dataChannel;
 
         @Override
         public void onCreateSuccess(final SessionDescription sdp) {
@@ -218,14 +231,14 @@ public class WebRtcClient {
 
         @Override
         public void onAddStream(MediaStream mediaStream) {
-            Log.d(TAG,"onAddStream "+mediaStream.label());
+//            d(TAG, "onAddStream " + mediaStream.label());
             // remote streams are displayed from 1 to MAX_PEER (0 is localStream)
             mListener.onAddRemoteStream(mediaStream, endPoint+1);
         }
 
         @Override
         public void onRemoveStream(MediaStream mediaStream) {
-            Log.d(TAG,"onRemoveStream "+mediaStream.label());
+//            d(TAG, "onRemoveStream " + mediaStream.label());
             removePeer(id);
         }
 
@@ -238,13 +251,14 @@ public class WebRtcClient {
         }
 
         public Peer(String id, int endPoint) {
-            Log.d(TAG,"new Peer: "+id + " " + endPoint);
+//            d(TAG, "new Peer: " + id + " " + endPoint);
             this.pc = factory.createPeerConnection(iceServers, pcConstraints, this);
+//            this.dataChannel = this.pc.createDataChannel("dataChannel", new DataChannel.Init());
             this.id = id;
             this.endPoint = endPoint;
 
+//            this.dataChannel.registerObserver(this);
             pc.addStream(localMS); //, new MediaConstraints()
-
             mListener.onStatusChanged("CONNECTING");
         }
     }
@@ -252,7 +266,6 @@ public class WebRtcClient {
     private Peer addPeer(String id, int endPoint) {
         Peer peer = new Peer(id, endPoint);
         peers.put(id, peer);
-
         endPoints[endPoint] = true;
         return peer;
     }
