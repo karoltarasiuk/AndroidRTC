@@ -260,9 +260,9 @@ public class WebRtcClient {
     private void removePeer(String id) {
         Peer peer = peers.get(id);
         mListener.onRemoveRemoteStream(peer.endPoint);
-        peer.pc.close();
-        peers.remove(peer.id);
-        endPoints[peer.endPoint] = false;
+//        peer.pc.close();
+//        peers.remove(peer.id);
+//        endPoints[peer.endPoint] = false;
     }
 
     public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params, EGLContext mEGLcontext) {
